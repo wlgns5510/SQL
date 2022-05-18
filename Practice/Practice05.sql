@@ -58,11 +58,90 @@ from employees e, (select manager_id man,
                    order by avg(salary) desc) s
 where e.employee_id = s.man;
  
-    
+--문제4.
+--각 사원(employee)에 대해서 사번(employee_id), 이름(first_name), 부서명
+--(department_name), 매니저(manager)의 이름(first_name)을 조회하세요.
+--부서가 없는 직원(Kimberely)도 표시합니다.
+--(106명)    
+select e.employee_id 사번,
+       e.first_name 이름,
+       d.department_name 부서명,
+       em.first_name "매니저의 이름"
+from employees e, departments d, employees em
+where e.department_id = d.department_id(+)
+    and e.manager_id = em.employee_id;
+
+--문제5.
+--2005년 이후 입사한 직원중에 입사일이 11번째에서 20번째의 직원의
+--사번, 이름, 부서명, 급여, 입사일을 입사일 순서로 출력하세요
+select r.rn 순서,
+       r.employee_id 사번,
+       r.first_name 이름,
+       d.department_name 부서명,
+       r.salary 급여,
+       r.hire_date 입사일
+from    (select rownum rn,
+                employee_id,
+                first_name,
+                salary,
+                hire_date,
+                department_id
+         from(select employee_id,
+                     first_name,
+                     salary,
+                     hire_date,
+                     department_id
+              from employees
+              where hire_date >= '05/01/01'
+              order by hire_date asc)
+        ) r, departments d --부서명을 처리하기 위해 필요함
+where  r.department_id = d.department_id
+    and r.rn >=11
+    and r.rn <=20
+order by r.hire_date asc;
+
+--문제6.
+--가장 늦게 입사한 직원의 이름(first_name last_name)과 연봉(salary)과 근무하는 부서 이름
+--(department_name)은?
+select first_name || ' ' || last_name 이름,
+       salary 연봉,
+       department_name "부서 이름"
+from employees e, departments d
+where hire_date = (select max(hire_date)
+                   from employees)
+and e.department_id = d.department_id;
+
+--문제7.
+--평균연봉(salary)이 가장 높은 부서 직원들의 직원번호(employee_id), 이름(firt_name), 성
+--(last_name)과 업무(job_title), 연봉(salary)을 조회하시오
+
+--부서중 가장 높은평균값
+select max(avg(salary))
+from employees
+group by department_id;
 
 
+--평균연봉이 가장 높은 부서(90)
+select department_id
+from employees
+group by department_id
+having avg(salary) = (select max(avg(salary))
+                    from employees
+                    group by department_id);
+
+--정답                    
+select employee_id 직원번호,
+       first_name 이름,
+       last_name 성,
+       job_title 업무,
+       salary 연봉
+from employees e, jobs j
+where e.department_id = (select department_id
+from employees
+group by department_id
+having avg(salary) = (select max(avg(salary))
+                    from employees
+                    group by department_id))
+and e.job_id = j.job_id;
 
 
-
-
-    
