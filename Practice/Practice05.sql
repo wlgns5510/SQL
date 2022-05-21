@@ -144,4 +144,5 @@ having avg(salary) = (select max(avg(salary))
                     group by department_id))
 and e.job_id = j.job_id;
 
-
+--문제8
+--문제9
